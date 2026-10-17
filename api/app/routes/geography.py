@@ -2,6 +2,7 @@ import json
 from functools import lru_cache
 from fastapi import APIRouter, HTTPException, Path, Query
 from ..database import ROOT, fetch_all
+from ..versions import version_predictions
 
 router = APIRouter()
 
@@ -29,13 +30,7 @@ def state_map(state_code: str = Path(pattern=r'^[A-Z]{2}$'),
     features = [f for f in original['features'] if f['properties']['state_code'] == state_code]
     if not features:
         raise HTTPException(404,'No hay límites para ese estado')
-    rows = fetch_all("""SELECT county_fips,payload FROM (
-        SELECT county_fips,payload,ROW_NUMBER() OVER (
-          PARTITION BY county_fips ORDER BY json_extract(payload,'$.generated_at') DESC,model_version DESC) AS rank
-        FROM predictions WHERE target_year=? AND
-          (json_extract(payload,'$.is_demo')=0 OR NOT EXISTS (
-            SELECT 1 FROM predictions p WHERE p.target_year=? AND json_extract(p.payload,'$.is_demo')=0))
-        ) WHERE rank=1""",(target_year,target_year))
+    version, rows = version_predictions(target_year)
     predictions = {r['county_fips']:json.loads(r['payload']) for r in rows}
     geometry_ids = {f['id'] for f in features}
     prefix = features[0]['id'][:2]
@@ -48,7 +43,7 @@ def state_map(state_code: str = Path(pattern=r'^[A-Z]{2}$'),
                  'model_version':prediction['model_version'] if prediction else None}
         result.append({**feature,'properties':props})
     return {'type':'FeatureCollection','features':result,'metadata':{
-        'source':'U.S. Census Bureau','geometry_year':2025,'target_year':target_year,
+        'source':'U.S. Census Bureau','geometry_year':2025,'target_year':target_year,'active_version':version,
         'source_url':'https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html',
         'n_with_prediction':sum(f['properties']['probability'] is not None for f in result),
         'prediction_codes_without_geometry':unplaced}}

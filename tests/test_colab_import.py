@@ -14,9 +14,39 @@ from api.app.database import ROOT, connect
 from api.app.main import app
 from api.scripts.import_colab import import_colab
 from api.scripts.import_predictions import import_file
+from api.scripts.activate_version import activate
 
 
 class ColabImportTests(unittest.TestCase):
+    def test_activation_never_falls_back_and_filters_history(self):
+        import_file(ROOT/'data/demo/demo.json',demo=True)
+        package=self.package()
+        with zipfile.ZipFile(package) as z:
+            contents={n:z.read(n) for n in z.namelist()}
+        metadata=json.loads(contents['metadatos.json'])
+        metadata['geographic_policy']='test-policy'
+        contents['metadatos.json']=json.dumps(metadata).encode()
+        contents['politica_geografica.json']=json.dumps({'version':'test-policy',
+            'allowed_fips':['48201','48453'],'quarantine_county_year':[{'county_fips':'48453','year':2023}]}).encode()
+        with zipfile.ZipFile(package,'w') as z:
+            for n,data in contents.items(): z.writestr(n,data)
+        import_colab(package)
+        activation=activate(package)
+        self.assertTrue(Path(activation['backup']).exists())
+        self.assertEqual(self.client.get('/api/predictions/48201?target_year=2027').json()['model_version'],'experimental-v1')
+        # Activación explícita no permite recurrir a demo u otra versión.
+        response=self.client.get('/api/predictions/48453?target_year=2027')
+        self.assertEqual(response.status_code,404)
+        self.assertIn('experimental-v1',response.json()['detail'])
+        history=self.client.get('/api/history/48453?through_year=2025&target_year=2027').json()
+        self.assertEqual(history,[])  # No mezclar historial demo con política entrenada.
+        with closing(connect()) as connection:
+            with connection:
+                connection.execute('INSERT OR REPLACE INTO history VALUES (?,?,?,?)',('48453',2023,50,0))
+                connection.execute('INSERT OR REPLACE INTO history VALUES (?,?,?,?)',('48453',2024,3,0))
+        history=self.client.get('/api/history/48453?through_year=2025&target_year=2027').json()
+        self.assertEqual([(r['year'],r['event_count']) for r in history],[(2024,3)])
+        self.assertEqual(self.client.get('/api/history/48453?through_year=2025&target_year=2027&model_version=other').status_code,409)
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.env = patch.dict(os.environ, {'FLOODRISK_DB': str(Path(self.directory.name)/'test.db')})

@@ -23,4 +23,5 @@ for module in (counties, predictions, history, geography):
 def health():
     count = fetch_all("SELECT COUNT(*) AS n FROM predictions WHERE json_extract(payload, '$.is_demo') = 0")[0]["n"]
     return {"status": "ok", "model_status": "experimental_predictions_loaded" if count else "no_trained_predictions",
-            "trained_prediction_count": count}
+            "trained_prediction_count": count,
+            "active_versions":fetch_all('SELECT target_year,model_version FROM active_versions ORDER BY target_year')}

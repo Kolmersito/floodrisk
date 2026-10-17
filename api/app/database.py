@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import json
 from pathlib import Path
 
 from .models import SCHEMA
@@ -8,7 +9,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def connect():
-    path = Path(os.environ.get("FLOODRISK_DB", "storage/floodrisk.db"))
+    config = ROOT / 'storage/active_database.json'
+    default = json.loads(config.read_text(encoding='utf-8'))['database'] if config.exists() else 'storage/floodrisk.db'
+    path = Path(os.environ.get("FLOODRISK_DB", default))
     if not path.is_absolute():
         path = ROOT / path
     path.parent.mkdir(parents=True, exist_ok=True)

@@ -115,7 +115,7 @@ function CountyDetailMap({ state, year, fips, onSelect }: {
       {[[null,'Sin predicción'],[0.1,'0–<25 %'],[0.3,'25–<50 %'],[0.6,'50–<75 %'],[0.9,'75–100 %']].map(([p,label]) => <span key={String(label)}><i style={{background:probabilityColor(p as number | null)}} />{label}</span>)}
       <span><i className="selected-swatch" />Selección</span>
     </div>
-    {data && <small>{data.metadata.n_with_prediction} de {data.features.length} áreas del mapa tienen resultado. Los colores son intervalos visuales, no categorías oficiales de riesgo.</small>}
+    {data && <small>Versión activa: {data.metadata.active_version ?? '—'}. {data.metadata.n_with_prediction} de {data.features.length} áreas del mapa tienen resultado. Los colores son intervalos visuales, no categorías oficiales de riesgo.</small>}
     {data && !hasPolygon && <p className="map-warning">El código seleccionado no tiene límites coincidentes en el catálogo de 2025. Su resultado no se asigna a otra área.</p>}
     {!!data?.metadata.prediction_codes_without_geometry.length && <p className="map-warning">{data.metadata.prediction_codes_without_geometry.length} códigos con resultado en este estado no tienen polígono coincidente. Pueden consultarse por código, sin ubicarlos artificialmente.</p>}
     <small className="map-source"><a href="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html" target="_blank" rel="noreferrer">U.S. Census Bureau · Límites generalizados 2025, escala 1:5,000,000</a>. Sin mapas base externos. Los equivalentes de condado están incluidos.</small>

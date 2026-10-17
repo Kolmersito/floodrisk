@@ -10,6 +10,7 @@ __pycache__/
 *.db
 *.db-shm
 *.db-wal
+storage/active_database.json
 data/raw/*
 data/processed/*
 data/geographic/*

@@ -12,7 +12,7 @@ export interface MapProperties {
   is_demo: boolean | null; model_version: string | null;
 }
 export type MapCollection = FeatureCollection<Geometry, MapProperties> & {
-  metadata: { n_with_prediction: number; prediction_codes_without_geometry: string[]; geometry_year: number }
+  metadata: { n_with_prediction: number; prediction_codes_without_geometry: string[]; geometry_year: number; active_version?: string }
 };
 export async function getMap(state: string, year: number): Promise<MapCollection> {
   const data = await request<MapCollection>(`/map/${state}?target_year=${year}`);
@@ -32,7 +32,10 @@ export const usesMocks = import.meta.env.VITE_DATA_MODE === 'mock';
 const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
 async function request<T>(path: string): Promise<T> {
   const response = await fetch(`${base}${path}`);
-  if (!response.ok) throw new Error(response.status === 404 ? 'Sin predicción disponible para este condado y año.' : `Error del servidor (${response.status}).`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(typeof body.detail === 'string' ? body.detail : `Error del servidor (${response.status}).`);
+  }
   return response.json();
 }
 export async function getCatalog(): Promise<{ counties: County[]; years: number[] }> {
@@ -47,6 +50,6 @@ export async function getResult(fips: string, year: number): Promise<{ predictio
     return { prediction, history: demo.history.filter(h => h.county_fips === fips && h.year < year) };
   }
   const prediction = await request<Prediction>(`/predictions/${fips}?target_year=${year}`);
-  const history = await request<HistoryEntry[]>(`/history/${fips}?through_year=${Number(prediction.data_cutoff.slice(0, 4))}&is_demo=${prediction.is_demo}`);
+  const history = await request<HistoryEntry[]>(`/history/${fips}?through_year=${Number(prediction.data_cutoff.slice(0, 4))}&is_demo=${prediction.is_demo}&target_year=${year}&model_version=${encodeURIComponent(prediction.model_version)}`);
   return { prediction, history };
 }

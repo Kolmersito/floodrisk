@@ -8,6 +8,10 @@ Proyecto compartido por las materias **Fundamentos de IA** y **Formulación de P
 
 React, TypeScript y Vite; API FastAPI con SQLite; notebook de entrenamiento en Colab e importador de sus resultados. **El experimento entrenado estima eventos relacionados con inundaciones, no exclusivamente inundaciones.** Las predicciones son experimentales y tienen cobertura limitada. La demo ficticia sigue disponible solo en modo explícito; no sustituye fallos de API.
 
+Al 17 de octubre de 2026, `experimental-v2-geo` está activa en la instalación local: 2,866 predicciones para 2027, antecedentes hasta 2025 y política geográfica explícita. El código no incluye las bases ni los artefactos entrenados; una instalación nueva requiere generarlos/importarlos y activar la versión según las instrucciones siguientes.
+
+Informe vigente: [PDF académico v3](docs/FloodRisk_Informe_v3.pdf) y [fuente editable](docs/informe_v3.md). Incluye métricas retrospectivas, EDT, decisiones geográficas, trabajo terminado y pendientes por materia. Se regenera con `python docs/build_report.py` (requiere ReportLab). Las 16 pruebas de software y el build verifican implementación, no validez operativa de las probabilidades.
+
 ## Abrir en Visual Studio Code
 
 Abre esta carpeta o ejecuta `code .` desde ella. No hace falta conectar el editor a un servicio.
@@ -57,6 +61,26 @@ Con resultados entrenados para un año, la API excluye predicciones demo de ese 
 El catálogo geográfico identifica nombres con coincidencia exacta de FIPS. Los códigos que no coinciden se muestran “Código XXXXX sin validar”; no se inventa una ubicación. La última versión se selecciona por fecha de generación, después de aplicar la separación demo/entrenado.
 
 ## Mapa interactivo y catálogo
+
+## Activación de versiones
+
+`active_versions` fija una versión completa por año objetivo. Tarjetas y mapas consultan exclusivamente esa versión; un código ausente no se completa con v1 ni con demo. Si todavía no hay activación explícita, la compatibilidad elige una versión global por año, no una por condado.
+
+Tras importar el ZIP en la base deseada, activar su versión/política con:
+
+```powershell
+.\.venv\Scripts\python.exe -m api.scripts.activate_version --zip "ruta\floodrisk_modelo_v2.zip"
+```
+
+El comando comprueba que los valores importados coincidan exactamente con el paquete y que la emisión respete la política, crea un respaldo y registra versión/política en una transacción. No ejecuta joblib. Los registros de otras versiones se conservan.
+
+La instalación local utiliza `storage/active_database.json` (excluido de Git) con `database: storage/floodrisk-v2-staged.db`. La base `storage/floodrisk.db` anterior permanece intacta. `FLOODRISK_DB`, si está definido, tiene prioridad sobre el archivo local. Sin ambos, se usa `storage/floodrisk.db`. La base preparada contiene tanto v1 como v2 y activa `experimental-v2-geo` para 2027.
+
+El historial solicita año objetivo y versión; omite códigos fuera del catálogo de la política y filas en cuarentena, sin borrar los originales. Si la versión cambia entre consultas, devuelve 409 para solicitar una nueva carga. Este filtrado no implica que todos los eventos históricos hayan sido auditados. `/health` informa las versiones activas.
+
+Para volver a la instalación previa, cambia el archivo local a `storage/floodrisk.db` y reinicia la API (sin una variable de entorno que lo anule). Esto revierte la conexión sin eliminar ni sobrescribir ninguna base. No cambies solo la fecha de generación para forzar una versión.
+
+### Geografía
 
 Leaflet muestra límites vectoriales oficiales del Census de 2025, sin depender de teselas de terceros. Los filtros y el clic en un condado comparten la selección. Hay zoom, controles para ver el estado/acercar selección, leyenda de intervalos probabilísticos y gris para áreas sin predicción (nunca se interpreta como cero). El mapa sigue visible cuando se selecciona un área sin resultado.
 
