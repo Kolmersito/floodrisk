@@ -23,11 +23,11 @@ export function CountyMap(props: {
     if (previousState.current !== props.state) { setNational(false); previousState.current = props.state; }
   },[props.state]);
   if (national) return <NationalMap selectedState={props.state} onSelect={code => { props.onStateSelect(code); setNational(false); }} />;
-  return <><div className="map-actions"><button onClick={() => setNational(true)}>← Volver a Estados Unidos</button></div><CountyDetailMap {...props} /></>;
+  return <CountyDetailMap {...props} onBackToCountry={() => setNational(true)} />;
 }
 
-function CountyDetailMap({ state, year, fips, onSelect }: {
-  state: string; year: number; fips: string; onSelect: (fips: string) => void;
+function CountyDetailMap({ state, year, fips, onSelect, onBackToCountry }: {
+  state: string; year: number; fips: string; onSelect: (fips: string) => void; onBackToCountry: () => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -107,7 +107,7 @@ function CountyDetailMap({ state, year, fips, onSelect }: {
   };
   const hasPolygon = data?.features.some(f => f.properties.county_fips === fips);
   return <section className="panel geographic-panel">
-    <div className="map-heading"><div><h2>Explora los condados · {state}</h2><p>Selecciona un área para consultar su resultado de {year}.</p></div><div className="map-actions"><button onClick={() => zoom(false)} disabled={!data}>Ver estado</button><button onClick={() => zoom(true)} disabled={!hasPolygon}>Acercar selección</button></div></div>
+    <div className="map-heading"><div><h2>Explora los condados · {state}</h2><p>Selecciona un área para consultar su resultado de {year}.</p></div><div className="map-actions" role="group" aria-label="Navegación del mapa"><button onClick={onBackToCountry}>← Volver al país</button><button onClick={() => zoom(false)} disabled={!data}>Ver estado</button><button onClick={() => zoom(true)} disabled={!hasPolygon}>Acercar selección</button></div></div>
     {loading && <p role="status">Cargando límites y predicciones…</p>}
     {error && <p role="alert">{error}</p>}
     <div ref={container} className="county-map" aria-label={`Mapa interactivo de condados de ${state}`} />

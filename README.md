@@ -12,6 +12,12 @@ Al 17 de octubre de 2026, `experimental-v2-geo` está activa en la instalación 
 
 Informe vigente: [PDF académico v3](docs/FloodRisk_Informe_v3.pdf) y [fuente editable](docs/informe_v3.md). Incluye métricas retrospectivas, EDT, decisiones geográficas, trabajo terminado y pendientes por materia. Se regenera con `python docs/build_report.py` (requiere ReportLab). Las 16 pruebas de software y el build verifican implementación, no validez operativa de las probabilidades.
 
+## Prototipo navegable e interfaz
+
+[Abrir el recorrido en Figma](https://www.figma.com/proto/CDXLWi9tsG9jdzsIWuZ3eV?node-id=18-17&starting-point-node-id=18%3A17&scaling=scale-down-width). Usa pantallas y mapas editables con ejemplos de la versión 2: Texas (Harris, Travis y Brooks sin predicción) y Florida (Miami-Dade y Orange). La aplicación web dispone del catálogo completo; el recorrido Figma simula estos cinco casos.
+
+El menú tiene solo **Resumen general** y **Metodología**. El resumen reúne mapa, filtros, resultado e historial. En la vista estatal, los controles **Volver al país**, **Ver estado** y **Acercar selección** se agrupan dentro del encabezado del mapa. Se comprobaron la navegación del prototipo, los filtros y el caso sin resultado; la aceptación final del equipo, la comparación visual completa y la reproducción en otro equipo siguen pendientes. El informe v3 precede a esta actualización de Figma y debe incorporar sus evidencias al cerrar la memoria académica.
+
 ## Abrir en Visual Studio Code
 
 Abre esta carpeta o ejecuta `code .` desde ella. No hace falta conectar el editor a un servicio.
