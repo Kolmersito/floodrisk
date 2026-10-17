@@ -6,7 +6,7 @@ Proyecto compartido por las materias **Fundamentos de IA** y **Formulación de P
 
 ## Estado actual
 
-Estructura inicial con React, TypeScript y Vite; API FastAPI con SQLite; datos ficticios compartidos y módulos de aprendizaje automático pendientes de implementar. **No hay un modelo entrenado. Todas las probabilidades y los historiales de demostración son ficticios.**
+React, TypeScript y Vite; API FastAPI con SQLite; notebook de entrenamiento en Colab e importador de sus resultados. **El experimento entrenado estima eventos relacionados con inundaciones, no exclusivamente inundaciones.** Las predicciones son experimentales y tienen cobertura limitada. La demo ficticia sigue disponible solo en modo explícito; no sustituye fallos de API.
 
 ## Abrir en Visual Studio Code
 
@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:5173. Por defecto utiliza los datos de ejemplo, sin necesitar la API. `npm run build` comprueba TypeScript y genera la versión de producción.
+Abre la dirección que indique Vite (normalmente http://localhost:5173; si está ocupada puede ser 5174). Por defecto consulta la API y requiere resultados importados. `npm run build` comprueba TypeScript y genera la versión de producción.
 
 ## Ejecutar la API
 
@@ -31,13 +31,49 @@ En otra terminal, desde la raíz del proyecto (Python 3.11 o superior):
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r api/requirements.txt
-.\.venv\Scripts\python.exe -m api.scripts.import_predictions --demo
 .\.venv\Scripts\python.exe -m uvicorn api.app.main:app --reload
 ```
 
 Documentación: http://localhost:8000/docs. SQLite se crea en `storage/floodrisk.db`. La importación de demostración es explícita; iniciar el servidor no inventa ni importa predicciones. Sin importación, las consultas de predicción devuelven 404.
 
-Para conectar la web, copia `web/.env.example` a `web/.env.local`, cambia `VITE_DATA_MODE=api` y reinicia Vite. En modo API los errores se muestran, sin sustituirlos silenciosamente por ejemplos.
+La web usa `VITE_DATA_MODE=api` por defecto. `web/.env.example` documenta la configuración; un archivo local `web/.env.local` puede ajustarla. Reinicia Vite después de cambiar variables. Para ver exclusivamente ejemplos sin API, establece explícitamente `VITE_DATA_MODE=mock`.
+
+En esta instalación local se configuró `VITE_API_URL=http://127.0.0.1:8001/api` porque el puerto 8000 ya ejecutaba una API anterior. Para conservar esa configuración, inicia la API con `.\.venv\Scripts\python.exe -m uvicorn api.app.main:app --reload --port 8001`. También puedes detener tú la instancia anterior y volver a configurar ambos lados en 8000; los puertos de web y API son independientes.
+
+## Importar resultados de Colab
+
+Desde la raíz del proyecto, antes de consultar resultados, ejecuta (ajusta las rutas a tus archivos):
+
+```powershell
+.\.venv\Scripts\python.exe -m api.scripts.import_colab --zip "C:\Users\Alejandro\Documents\floodrisk_modelo_v1.zip" --dataset-zip "C:\Users\Alejandro\Downloads\Riesgo de inundaciones para seguros en USA (1).zip"
+```
+
+El primer ZIP contiene `predicciones.csv` y `metadatos.json`; el segundo es el ZIP original exacto utilizado en Colab. Se verifica su hash y se importan conteos históricos NOAA hasta el corte. El historial no se reconstruye con etiquetas binarias. `--dataset-zip` es opcional: sin él solo se cargan predicciones y la web no muestra historial ficticio para resultados entrenados.
+
+La importación valida claves, probabilidades, corte, desfase y metadatos antes de escribir, y crea un respaldo `storage/floodrisk.before-colab-*.db`. Reimportar la misma versión actualiza sus resultados, sin duplicarlos. Nunca se carga ni ejecuta `modelo.joblib`; el dashboard consulta predicciones precalculadas. No hace falta instalar scikit-learn en la API.
+
+Con resultados entrenados para un año, la API excluye predicciones demo de ese año. Si un condado no tiene resultado entrenado, devuelve 404 y la interfaz muestra “Sin predicción disponible”; nunca un 0 % inventado. La consulta de historial incluye `is_demo=false` para evitar mezclar fuentes.
+
+El catálogo geográfico identifica nombres con coincidencia exacta de FIPS. Los códigos que no coinciden se muestran “Código XXXXX sin validar”; no se inventa una ubicación. La última versión se selecciona por fecha de generación, después de aplicar la separación demo/entrenado.
+
+## Mapa interactivo y catálogo
+
+Leaflet muestra límites vectoriales oficiales del Census de 2025, sin depender de teselas de terceros. Los filtros y el clic en un condado comparten la selección. Hay zoom, controles para ver el estado/acercar selección, leyenda de intervalos probabilísticos y gris para áreas sin predicción (nunca se interpreta como cero). El mapa sigue visible cuando se selecciona un área sin resultado.
+
+La vista inicial es nacional, dividida por estados. Un clic en un estado abre sus condados y actualiza los filtros. El botón “Volver a Estados Unidos” regresa a la vista nacional. Alaska y Hawaii aparecen reubicados como insets a distinta escala para conservar la silueta reconocible del país; al abrirlos se muestran sus límites geográficos sin esa reubicación. Los colores nacionales solo identifican estados y selección, no probabilidades estatales agregadas. `/api/states` sirve los límites estatales originales.
+
+Para regenerar el catálogo en una instalación nueva:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r api/requirements-geography.txt
+.\.venv\Scripts\python.exe -m api.scripts.prepare_geography
+```
+
+Requiere Internet solo durante la preparación. Reinicia la API tras regenerar límites para renovar la caché. Los archivos generados son locales en `data/geographic/` y no se versionan; su README documenta la procedencia. La preparación amplía el catálogo incluso con áreas sin predicción y actualiza nombres en SQLite sin modificar porcentajes.
+
+**Hallazgo geográfico pendiente:** 66 códigos del export no coinciden con los catálogos de 2020/2025 y ocho códigos históricos de Connecticut no tienen límites actuales coincidentes. Permanecen consultables con advertencias, pero no se ubican ni redistribuyen sus probabilidades. Revisar la geocodificación de los datos de origen antes del siguiente entrenamiento. Los conteos de cobertura del mapa se refieren a coincidencias exactas, no a validación integral del dataset.
+
+El resultado inicial de Colab contiene 2,988 predicciones de 2027 con antecedentes hasta 2025. `/health` muestra `experimental_predictions_loaded` cuando existen resultados entrenados. Estos datos locales y respaldos SQLite no se incluyen en Git.
 
 ## Carpetas
 
@@ -50,7 +86,7 @@ Para conectar la web, copia `web/.env.example` a `web/.env.local`, cambia `VITE_
 
 ## Contrato de predicción
 
-Una predicción identifica `county_fips`, `target_year`, `probability`, `data_cutoff`, `generated_at`, `model_version` e `is_demo`. `probability` está entre 0 y 1; FIPS conserva cinco caracteres. El objetivo propuesto es al menos una inundación reportada durante el año objetivo, pendiente de construir etiquetas específicas de inundación con NOAA. Los reclamos NFIP no se interpretan como si fueran todos los eventos de inundación.
+Una predicción identifica `county_fips`, `target_year`, `probability`, `data_cutoff`, `generated_at`, `model_version` e `is_demo`, junto con `is_experimental`, `event_definition`, `horizon_years`, `input_snapshot_at` y `limitations`. `probability` está entre 0 y 1; FIPS conserva cinco caracteres. La etiqueta inicial es `flood_related_event_count > 0`, que agrupa inundaciones, lluvia fuerte, huracanes y marejadas según el diccionario. Los reclamos NFIP no equivalen a todos los eventos de inundación. No se inventan factores individuales: este export no los contiene.
 
 Cada variable debe usar únicamente información disponible en la fecha de corte y el corte debe ser anterior al 1 de enero del año objetivo. También se debe registrar la disponibilidad/publicación de los datos. La validación se separará por años completos, con todos los condados de un año en el mismo grupo. Las transformaciones y la calibración se ajustarán sin observar el conjunto de evaluación final.
 
@@ -67,9 +103,9 @@ npm run build
 
 ## Próximo trabajo
 
-1. Auditar datasets y definir etiquetas NOAA específicas, cobertura y retrasos de publicación.
-2. Construir variables históricas, baseline y evaluación temporal en Colab.
-3. Entrenar y calibrar el modelo, guardar métricas y metadatos reproducibles.
-4. Añadir GeoJSON y mapa interactivo, y cargar resultados reales con un contrato validado.
+1. Validar catálogo FIPS, cobertura y retrasos de publicación; decidir si obtener etiquetas específicas de inundación.
+2. Revisar calibración y resultados del experimento; no confundir ROC-AUC con exactitud.
+3. Investigar códigos sin correspondencia y posibles zonas meteorológicas antes de reentrenar; el mapa no los remapea.
+4. Recopilar evidencias de la interfaz y aportaciones para ambas materias.
 
 No se incluyen autenticación, despliegue ni LM Studio en esta primera estructura.

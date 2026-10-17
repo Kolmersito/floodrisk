@@ -7,6 +7,8 @@ class County(BaseModel):
     name: str
     state: str
     state_code: str
+    name_verified: bool = False
+    geometry_available: bool = False
 
 
 class Prediction(BaseModel):
@@ -18,6 +20,11 @@ class Prediction(BaseModel):
     model_version: str = Field(min_length=1)
     is_demo: bool
     factors: list[str]
+    is_experimental: bool = False
+    event_definition: str = "Ejemplo ilustrativo"
+    horizon_years: int | None = Field(default=None, ge=1)
+    input_snapshot_at: datetime | None = None
+    limitations: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def check_temporal_cutoff(self):

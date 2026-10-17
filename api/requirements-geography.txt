@@ -1,0 +1,2 @@
+# Solo para generar los archivos geográficos; no requerido por el servidor.
+pyshp>=3.1,<4

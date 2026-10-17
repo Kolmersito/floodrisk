@@ -1,0 +1,15 @@
+.county-map { height: 420px; width: 100%; background: #f0f5f9; border: 1px solid #d6e3ed; border-radius: 10px; z-index: 0; }
+.map-heading { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+.map-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.map-actions button { background: #eef6fc; color: #17547a; border: 1px solid #ccdeec; border-radius: 6px; padding: 9px 12px; font-size: 12px; }
+.map-actions button:disabled { opacity: .5; cursor: default; }
+.map-legend { display: flex; flex-wrap: wrap; gap: 12px 18px; margin: 16px 0 12px; font-size: 12px; }
+.map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.map-legend i { display: inline-block; height: 13px; width: 20px; border: 1px solid #a4b6c3; border-radius: 2px; }
+.map-legend .selected-swatch { background: transparent; border: 3px solid #e68100; }
+.map-source { display: block; margin-top: 14px; }
+.map-source a { color: #175b85; }
+.map-warning { color: #825400; background: #fff7e7; padding: 12px; border-radius: 7px; margin-top: 12px; }
+.leaflet-interactive:focus-visible { outline: 3px solid #e68100; }
+.leaflet-tooltip { max-width: 300px; white-space: normal; }
+@media(max-width: 620px) { .county-map { height: 340px; } .map-heading { flex-direction: column; gap: 0; } }
