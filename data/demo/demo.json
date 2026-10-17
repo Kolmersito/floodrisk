@@ -1,0 +1,29 @@
+{
+  "counties": [
+    { "county_fips": "48201", "name": "Harris", "state": "Texas", "state_code": "TX" },
+    { "county_fips": "48453", "name": "Travis", "state": "Texas", "state_code": "TX" },
+    { "county_fips": "12086", "name": "Miami-Dade", "state": "Florida", "state_code": "FL" }
+  ],
+  "predictions": [
+    { "county_fips": "48201", "target_year": 2027, "probability": 0.68, "data_cutoff": "2025-12-31", "generated_at": "2026-10-16T12:00:00Z", "model_version": "demo-v1", "is_demo": true, "factors": ["Frecuencia histórica de inundaciones", "Eventos anteriores al año objetivo", "Antecedentes de reclamaciones NFIP"] },
+    { "county_fips": "48453", "target_year": 2027, "probability": 0.37, "data_cutoff": "2025-12-31", "generated_at": "2026-10-16T12:00:00Z", "model_version": "demo-v1", "is_demo": true, "factors": ["Frecuencia histórica de inundaciones", "Eventos anteriores al año objetivo", "Antecedentes de reclamaciones NFIP"] },
+    { "county_fips": "12086", "target_year": 2027, "probability": 0.54, "data_cutoff": "2025-12-31", "generated_at": "2026-10-16T12:00:00Z", "model_version": "demo-v1", "is_demo": true, "factors": ["Frecuencia histórica de inundaciones", "Eventos anteriores al año objetivo", "Antecedentes de reclamaciones NFIP"] }
+  ],
+  "history": [
+    { "county_fips": "48201", "year": 2021, "event_count": 3, "is_demo": true },
+    { "county_fips": "48201", "year": 2022, "event_count": 5, "is_demo": true },
+    { "county_fips": "48201", "year": 2023, "event_count": 2, "is_demo": true },
+    { "county_fips": "48201", "year": 2024, "event_count": 4, "is_demo": true },
+    { "county_fips": "48201", "year": 2025, "event_count": 3, "is_demo": true },
+    { "county_fips": "48453", "year": 2021, "event_count": 1, "is_demo": true },
+    { "county_fips": "48453", "year": 2022, "event_count": 2, "is_demo": true },
+    { "county_fips": "48453", "year": 2023, "event_count": 0, "is_demo": true },
+    { "county_fips": "48453", "year": 2024, "event_count": 1, "is_demo": true },
+    { "county_fips": "48453", "year": 2025, "event_count": 2, "is_demo": true },
+    { "county_fips": "12086", "year": 2021, "event_count": 2, "is_demo": true },
+    { "county_fips": "12086", "year": 2022, "event_count": 3, "is_demo": true },
+    { "county_fips": "12086", "year": 2023, "event_count": 1, "is_demo": true },
+    { "county_fips": "12086", "year": 2024, "event_count": 2, "is_demo": true },
+    { "county_fips": "12086", "year": 2025, "event_count": 4, "is_demo": true }
+  ]
+}

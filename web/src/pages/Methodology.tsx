@@ -1,0 +1,3 @@
+export function Methodology() {
+  return <section className="panel prose"><h2>Metodología en construcción</h2><p>El objetivo propuesto es estimar si se reportará al menos una inundación durante un año en un condado.</p><p>Las entradas deben haber estado disponibles antes de iniciar el año objetivo. El entrenamiento, la calibración y la evaluación se separarán por periodos, manteniendo juntos todos los condados de cada año.</p><p>La interfaz actual usa datos ficticios. Falta auditar las fuentes, construir etiquetas específicas de inundación y entrenar y evaluar el modelo.</p><p>Los antecedentes de reclamaciones NFIP representan actividad aseguradora y no equivalen al conjunto de inundaciones.</p></section>;
+}
