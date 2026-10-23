@@ -10,13 +10,45 @@ React, TypeScript y Vite; API FastAPI con SQLite; notebook de entrenamiento en C
 
 Al 17 de octubre de 2026, `experimental-v2-geo` está activa en la instalación local: 2,866 predicciones para 2027, antecedentes hasta 2025 y política geográfica explícita. El código no incluye las bases ni los artefactos entrenados; una instalación nueva requiere generarlos/importarlos y activar la versión según las instrucciones siguientes.
 
-Informe vigente: [PDF académico v3](docs/FloodRisk_Informe_v3.pdf) y [fuente editable](docs/informe_v3.md). Incluye métricas retrospectivas, EDT, decisiones geográficas, trabajo terminado y pendientes por materia. Se regenera con `python docs/build_report.py` (requiere ReportLab). Las 16 pruebas de software y el build verifican implementación, no validez operativa de las probabilidades.
+Documentación vigente (22 de octubre de 2026): [Fundamentos de IA](docs/FloodRisk_Fundamentos_IA_actualizado.pdf), [Formulación de Proyectos](docs/FloodRisk_Formulacion_actualizada.pdf) e [informe técnico compartido v4](docs/FloodRisk_Informe_v4.pdf). Fuentes editables: [IA](docs/fundamentos_ia_actualizado.md), [Formulación](docs/formulacion_actualizada.md) y [v4](docs/informe_v4.md). El informe v3 se conserva como antecedente. La adaptación móvil modifica presentación y aceptación, no el modelo ni sus probabilidades.
+
+Los documentos específicos reemplazan las propuestas técnicas que ya no corresponden al prototipo; no acreditan aceptación docente. Los resultados de compatibilidad se registran en [la matriz](docs/compatibilidad.md); las pruebas de software no demuestran validez predictiva.
 
 ## Prototipo navegable e interfaz
 
 [Abrir el recorrido en Figma](https://www.figma.com/proto/CDXLWi9tsG9jdzsIWuZ3eV?node-id=18-17&starting-point-node-id=18%3A17&scaling=scale-down-width). Usa pantallas y mapas editables con ejemplos de la versión 2: Texas (Harris, Travis y Brooks sin predicción) y Florida (Miami-Dade y Orange). La aplicación web dispone del catálogo completo; el recorrido Figma simula estos cinco casos.
 
-El menú tiene solo **Resumen general** y **Metodología**. El resumen reúne mapa, filtros, resultado e historial. En la vista estatal, los controles **Volver al país**, **Ver estado** y **Acercar selección** se agrupan dentro del encabezado del mapa. Se comprobaron la navegación del prototipo, los filtros y el caso sin resultado; la aceptación final del equipo, la comparación visual completa y la reproducción en otro equipo siguen pendientes. El informe v3 precede a esta actualización de Figma y debe incorporar sus evidencias al cerrar la memoria académica.
+El menú tiene solo **Resumen general** y **Metodología**. El resumen reúne mapa, filtros, resultado e historial. En la vista estatal, los controles **Volver al país**, **Ver estado** y **Acercar selección** se agrupan dentro del encabezado del mapa. Se comprobaron la navegación del prototipo, los filtros y el caso sin resultado; la aceptación final del equipo, la comparación visual completa y la reproducción en otro equipo siguen pendientes. El informe v4 y los documentos por materia reflejan esta evolución; las contribuciones individuales y la aceptación académica siguen pendientes.
+
+## Móvil primero y navegadores
+
+[Recorrido móvil en el mismo archivo Figma](https://www.figma.com/proto/CDXLWi9tsG9jdzsIWuZ3eV?node-id=57-4178&starting-point-node-id=57%3A4178&scaling=scale-down). Doce pantallas de 390 × 844 px y tres filtros superpuestos conservan los casos TX/FL, metodología y navegación, con capas y mapas editables. El recorrido de escritorio conserva su inicio 18:17.
+
+La web usa CSS base móvil y amplía su distribución para tablet/escritorio. Los controles principales tienen al menos 44 px y los selectores 48 px con texto de 16 px. El historial se desplaza dentro de su panel; el resto de la página debe caber desde 320 px. Los filtros permiten seleccionar áreas difíciles de tocar en el mapa.
+
+Para probar desde un teléfono en la misma red, inicia la API en el equipo (puerto 8000) y desde `web` usa `npm run dev -- --host 0.0.0.0`. Abre en el teléfono la IP local del equipo con el puerto anunciado por Vite. No abras localhost en el teléfono para consultar la API del equipo. La web usa `/api` mediante el proxy de `vite.config.ts`; elimina o ajusta cualquier `.env.local` antiguo que apunte a localhost. Si tu API usa 8001, cambia los destinos del proxy en esa configuración. En producción se requiere un proxy equivalente o una URL explícita de API con orígenes autorizados.
+
+El objetivo de sintaxis es Chrome/Edge 107+, Firefox 104+ y Safari 16+; no acredita pruebas en todas esas versiones mínimas. La [matriz de compatibilidad](docs/compatibilidad.md) identifica las versiones ejecutadas. WebKit automatizado no sustituye Safari real de iPhone/Mac, cuya validación permanece pendiente.
+
+Para repetir la prueba funcional con datos v2, inicia API en 8000 y web en 5185 (`npm run dev -- --port 5185 --strictPort`), y en otra terminal desde `web`:
+
+```powershell
+npx playwright install chromium firefox webkit
+npm run test:browsers
+```
+
+La prueba consulta datos reales locales, no usa datos demo y no entrena. Comprueba cuatro anchuras, los cinco casos, navegación, mapa, historial, giro y error de API. Evidencias en `docs/evidence/mobile/`; el informe de resultados registra las versiones. `FLOODRISK_WEB_URL` permite otra dirección de la web.
+
+## Regenerar documentación
+
+Requiere Python y ReportLab. Desde la raíz:
+
+```powershell
+python docs/update_mobile_report.py
+python docs/build_report.py --source docs/fundamentos_ia_actualizado.md --output docs/FloodRisk_Fundamentos_IA_actualizado.pdf --label "Fundamentos de IA" --date "22 de octubre de 2026"
+python docs/build_report.py --source docs/formulacion_actualizada.md --output docs/FloodRisk_Formulacion_actualizada.pdf --label "Formulación de Proyectos" --date "22 de octubre de 2026"
+python docs/build_report.py --source docs/informe_v4.md --output docs/FloodRisk_Informe_v4.pdf --label "Informe compartido v4" --date "22 de octubre de 2026"
+```
 
 ## Abrir en Visual Studio Code
 
@@ -101,7 +133,7 @@ Para regenerar el catálogo en una instalación nueva:
 
 Requiere Internet solo durante la preparación. Reinicia la API tras regenerar límites para renovar la caché. Los archivos generados son locales en `data/geographic/` y no se versionan; su README documenta la procedencia. La preparación amplía el catálogo incluso con áreas sin predicción y actualiza nombres en SQLite sin modificar porcentajes.
 
-**Hallazgo geográfico pendiente:** 66 códigos del export no coinciden con los catálogos de 2020/2025 y ocho códigos históricos de Connecticut no tienen límites actuales coincidentes. Permanecen consultables con advertencias, pero no se ubican ni redistribuyen sus probabilidades. Revisar la geocodificación de los datos de origen antes del siguiente entrenamiento. Los conteos de cobertura del mapa se refieren a coincidencias exactas, no a validación integral del dataset.
+**Antecedente de v1, tratado por la política v2 descrita arriba:** 66 códigos del export no coinciden con los catálogos de 2020/2025 y ocho códigos históricos de Connecticut no tienen límites actuales coincidentes. Los registros originales se conservan; en la emisión activa v2 se excluyen esos códigos y los 48 pares Georgia/2025 en cuarentena. No se redistribuyen sus probabilidades. Revisar la geocodificación de los datos de origen antes del siguiente entrenamiento. Los conteos de cobertura del mapa se refieren a coincidencias exactas, no a validación integral del dataset.
 
 El resultado inicial de Colab contiene 2,988 predicciones de 2027 con antecedentes hasta 2025. `/health` muestra `experimental_predictions_loaded` cuando existen resultados entrenados. Estos datos locales y respaldos SQLite no se incluyen en Git.
 

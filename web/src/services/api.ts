@@ -29,7 +29,8 @@ export async function getMap(state: string, year: number): Promise<MapCollection
 }
 
 export const usesMocks = import.meta.env.VITE_DATA_MODE === 'mock';
-const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+// Same origin works on a phone too; localhost there would refer to the phone.
+const base = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 async function request<T>(path: string): Promise<T> {
   const response = await fetch(`${base}${path}`);
   if (!response.ok) {
