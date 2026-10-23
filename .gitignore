@@ -19,3 +19,6 @@ ml/reports/*
 !**/.gitkeep
 !**/README.md
 .pytest_cache/
+
+# Local rendering and verification intermediates
+tmp/

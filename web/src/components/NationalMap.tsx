@@ -32,15 +32,15 @@ export function NationalMap({ selectedState, onSelect }: {selectedState: string;
   }, []);
   useEffect(() => {
     if (!element.current) return;
-    const instance = L.map(element.current,{scrollWheelZoom:false}).setView([38,-97],3);
+    const instance = L.map(element.current,{scrollWheelZoom:false, zoomAnimation:false, fadeAnimation:false, markerZoomAnimation:false}).setView([38,-97],3);
     instance.attributionControl.addAttribution('Estados: U.S. Census Bureau · 2025');
     map.current = instance;
     const observer = new ResizeObserver(() => {
       instance.invalidateSize();
-      if (group.current?.getBounds().isValid()) instance.fitBounds(group.current.getBounds(),{padding:[14,14]});
+      if (group.current?.getBounds().isValid()) instance.fitBounds(group.current.getBounds(),{animate:false,padding:[14,14]});
     });
     observer.observe(element.current);
-    return () => { observer.disconnect(); instance.remove(); map.current = null; group.current = null; };
+    return () => { observer.disconnect(); instance.stop(); instance.remove(); map.current = null; group.current = null; };
   }, []);
   useEffect(() => {
     if (!data || !map.current) return;
@@ -69,7 +69,7 @@ export function NationalMap({ selectedState, onSelect }: {selectedState: string;
       }
     }).addTo(map.current);
     group.current = layer;
-    map.current.fitBounds(layer.getBounds(),{padding:[14,14]});
+    map.current.fitBounds(layer.getBounds(),{animate:false,padding:[14,14]});
   },[data,selectedState]);
   return <section className="panel geographic-panel">
     <div className="map-heading"><div><h2>Estados Unidos · Explora por estado</h2><p>Haz clic en un estado para ver sus condados y las predicciones.</p></div><span className="badge">PAÍS → ESTADO → CONDADO</span></div>

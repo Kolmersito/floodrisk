@@ -40,12 +40,12 @@ function CountyDetailMap({ state, year, fips, onSelect, onBackToCountry }: {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!container.current) return;
-    const instance = L.map(container.current, { scrollWheelZoom: false }).setView([38, -97], 4);
+    const instance = L.map(container.current, { scrollWheelZoom: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false }).setView([38, -97], 4);
     instance.attributionControl.addAttribution('Límites: U.S. Census Bureau · 2025');
     map.current = instance;
     const observer = new ResizeObserver(() => instance.invalidateSize());
     observer.observe(container.current);
-    return () => { observer.disconnect(); instance.remove(); map.current = null; polygons.current = null; fittedState.current = ''; };
+    return () => { observer.disconnect(); instance.stop(); instance.remove(); map.current = null; polygons.current = null; fittedState.current = ''; };
   }, []);
   useEffect(() => {
     if (!state) return;
@@ -93,7 +93,7 @@ function CountyDetailMap({ state, year, fips, onSelect, onBackToCountry }: {
       if ((polygon as L.Polygon).feature?.properties.county_fips === fips) (polygon as L.Path).bringToFront();
     });
     if (fittedState.current !== state && layer.getBounds().isValid()) {
-      instance.fitBounds(layer.getBounds(), { padding:[15,15] }); fittedState.current = state;
+      instance.fitBounds(layer.getBounds(), { animate:false, padding:[15,15] }); fittedState.current = state;
     }
   }, [data, fips, state]);
   const zoom = (selected: boolean) => {
@@ -101,9 +101,9 @@ function CountyDetailMap({ state, year, fips, onSelect, onBackToCountry }: {
     if (!instance || !layer) return;
     if (selected) layer.eachLayer(polygon => {
       if ((polygon as L.Polygon).feature?.properties.county_fips === fips)
-        instance.fitBounds((polygon as L.Polygon).getBounds(), { padding:[30,30], maxZoom:11 });
+        instance.fitBounds((polygon as L.Polygon).getBounds(), { animate:false, padding:[30,30], maxZoom:11 });
     });
-    else if (layer.getBounds().isValid()) instance.fitBounds(layer.getBounds(), { padding:[15,15] });
+    else if (layer.getBounds().isValid()) instance.fitBounds(layer.getBounds(), { animate:false, padding:[15,15] });
   };
   const hasPolygon = data?.features.some(f => f.properties.county_fips === fips);
   return <section className="panel geographic-panel">
